@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -29,8 +30,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import br.android.cericatto.audio_waveform_ui.ui.main_screen.MainScreenAction
+import br.android.cericatto.audio_waveform_ui.ui.main_screen.MainScreenState
 import br.android.cericatto.audio_waveform_ui.ui.theme.audioBarBackgroundColor
-import br.android.cericatto.audio_waveform_ui.ui.theme.audioBarBackgroundShadowColor
 import br.android.cericatto.audio_waveform_ui.ui.theme.audioBarChartWave
 import br.android.cericatto.audio_waveform_ui.ui.theme.audioBarProgressColor
 import java.io.File
@@ -44,13 +46,17 @@ data class WaveformData(
 )
 
 @Composable
-fun AudioPlayerWithControls(file: File) {
+fun AudioPlayerWithControls(
+	onAction: (MainScreenAction) -> Unit,
+	state: MainScreenState,
+	file: File
+) {
 	// Create the controller with proper lifecycle scope.
 	val coroutineScope = rememberCoroutineScope()
 
 	// Remember the controller instance.
 	val controller = remember(file) {
-		AudioPlayerController(file, coroutineScope)
+		AudioPlayerController(onAction, file, coroutineScope)
 	}
 
 	// Collect the state as a Compose State.
@@ -76,33 +82,49 @@ fun AudioPlayerWithControls(file: File) {
 				color = audioBarBackgroundColor,
 				shape = RoundedCornerShape(20.dp)
 			)
+			.height(72.dp)
 			.fillMaxWidth()
 			.padding(8.dp),
 		verticalAlignment = Alignment.CenterVertically,
 		horizontalArrangement = Arrangement.Start
 	) {
-		IconButton(
-			onClick = { controller.togglePlayPause() },
-			modifier = Modifier
-				.padding(end = 8.dp)
-				.background(
-					color = Color.White,
-					shape = RoundedCornerShape(25.dp)
+		if (state.isLoading) {
+			Box(
+				contentAlignment = Alignment.Center,
+				modifier = Modifier.fillMaxWidth()
+			) {
+				CircularProgressIndicator(
+					color = audioBarProgressColor,
+					strokeWidth = 3.dp,
+					modifier = Modifier
+						.padding(10.dp)
+						.size(30.dp)
 				)
-		) {
-			Icon(
-				imageVector = if (playerState.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
-				contentDescription = if (playerState.isPlaying) "Pause" else "Play",
-				tint = audioBarProgressColor.copy(alpha = 0.85f),
-				modifier = Modifier.size(40.dp)
-			)
+			}
+		} else {
+			IconButton(
+				onClick = { controller.togglePlayPause() },
+				modifier = Modifier
+					.padding(end = 8.dp)
+					.background(
+						color = Color.White,
+						shape = RoundedCornerShape(25.dp)
+					)
+			) {
+				Icon(
+					imageVector = if (playerState.isPlaying) Icons.Filled.Pause else Icons.Filled.PlayArrow,
+					contentDescription = if (playerState.isPlaying) "Pause" else "Play",
+					tint = audioBarProgressColor,
+					modifier = Modifier.size(40.dp)
+				)
+			}
 		}
-
 		Box(
 			modifier = Modifier.weight(1f)
 		) {
 			playerState.waveformData?.let { data ->
 				AudioWaveform(
+					onAction = onAction,
 					waveformData = data,
 					currentProgress = playerState.progress,
 					modifier = Modifier.fillMaxWidth()
@@ -114,13 +136,14 @@ fun AudioPlayerWithControls(file: File) {
 
 @Composable
 private fun AudioWaveform(
+	onAction: (MainScreenAction) -> Unit,
 	waveformData: WaveformData,
 	currentProgress: Float,
 	modifier: Modifier = Modifier,
 	backgroundColor: Color = Color.Transparent,
 	barColor: Color = audioBarChartWave,
-	playedBarColor: Color = audioBarProgressColor.copy(alpha = 0.3f),
-	indicatorColor: Color = audioBarProgressColor.copy(alpha = 0.7f)
+	playedBarColor: Color = audioBarProgressColor.copy(alpha = 0.1f),
+	indicatorColor: Color = audioBarProgressColor.copy(alpha = 0.9f)
 ) {
 	Canvas(
 		modifier = modifier
@@ -188,6 +211,8 @@ private fun DrawScope.drawProgressIndicator(
 @Composable
 private fun AudioPlayerWithControlsPreview() {
 	AudioPlayerWithControls(
+		onAction = {},
+		state = MainScreenState(),
 		file = File("audio.wav")
 	)
 }
@@ -196,6 +221,7 @@ private fun AudioPlayerWithControlsPreview() {
 @Composable
 private fun AudioWaveformPreview() {
 	AudioWaveform(
+		onAction = {},
 		waveformData = WaveformData(
 			amplitudes = listOf(
 				0.0f, 0.0026550293f, 0.0029296875f, 0.0035095215f, -0.0029296875f,

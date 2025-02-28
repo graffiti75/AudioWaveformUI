@@ -1,6 +1,7 @@
 package br.android.cericatto.audio_waveform_ui.audio
 
 import android.media.MediaPlayer
+import br.android.cericatto.audio_waveform_ui.ui.main_screen.MainScreenAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -12,7 +13,9 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.io.File
 
-// AudioPlayerState holds all the state needed for the player
+/**
+ * AudioPlayerState holds all the state needed for the player.
+ */
 data class AudioPlayerState(
 	val isPlaying: Boolean = false,
 	val progress: Float = 0f,
@@ -23,6 +26,7 @@ data class AudioPlayerState(
  * AudioPlayerController manages MediaPlayer lifecycle and state updates.
   */
 class AudioPlayerController(
+	onAction: (MainScreenAction) -> Unit,
 	private val file: File,
 	private val coroutineScope: CoroutineScope
 ) {
@@ -35,9 +39,9 @@ class AudioPlayerController(
 	private var progressJob: Job? = null
 
 	init {
-		// Initialize MediaPlayer and load waveform data
+		// Initialize MediaPlayer and load waveform data.
 		initializePlayer()
-		loadWaveformData()
+		loadWaveformData(onAction)
 	}
 
 	private fun initializePlayer() {
@@ -56,9 +60,10 @@ class AudioPlayerController(
 		}
 	}
 
-	private fun loadWaveformData() {
+	private fun loadWaveformData(onAction: (MainScreenAction) -> Unit) {
 		coroutineScope.launch {
 			val data = processWaveFile(file)
+			onAction(MainScreenAction.OnAmplitudesLoaded)
 			_state.update { it.copy(waveformData = data) }
 		}
 	}
@@ -99,7 +104,7 @@ class AudioPlayerController(
 					val progress = player.currentPosition.toFloat() / player.duration
 					_state.update { it.copy(progress = progress) }
 				}
-				delay(16) // Approximately 60 FPS
+				delay(16) // Approximately 60 FPS.
 			}
 		}
 	}

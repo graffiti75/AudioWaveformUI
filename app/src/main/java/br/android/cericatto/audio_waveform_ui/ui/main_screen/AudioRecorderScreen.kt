@@ -85,6 +85,8 @@ fun RequestRecordAudioPermission(viewModel: MainScreenViewModel) {
 
 @Composable
 fun AudioPlayer(
+	onAction: (MainScreenAction) -> Unit,
+	state: MainScreenState,
 	file: File,
 	modifier: Modifier
 ) {
@@ -94,7 +96,11 @@ fun AudioPlayer(
 		modifier = modifier.fillMaxSize()
 			.padding(10.dp)
 	) {
-		AudioPlayerWithControls(file = file)
+		AudioPlayerWithControls(
+			onAction = onAction,
+			state = state,
+			file = file
+		)
 	}
 }
 
@@ -103,6 +109,8 @@ fun AudioPlayer(
 private fun AudioPlayerPreview() {
 	val context = LocalContext.current
 	AudioPlayer(
+		onAction = {},
+		state = MainScreenState(),
 		file = File(context.cacheDir, "audio.wav"),
 		modifier = Modifier
 	)

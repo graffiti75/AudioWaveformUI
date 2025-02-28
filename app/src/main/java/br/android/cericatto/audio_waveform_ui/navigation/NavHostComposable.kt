@@ -14,10 +14,7 @@ fun NavHostComposable() {
 		startDestination = Route.MainScreen
 	) {
 		composable<Route.MainScreen> {
-			MainScreenRoot(
-				onNavigate = { navController.navigate(it) },
-				onNavigateUp = { navController.navigateUp() }
-			)
+			MainScreenRoot()
 		}
 	}
 }
