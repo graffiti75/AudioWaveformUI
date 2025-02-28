@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">AudioWaveformUI</string>
+
+    <string name="record_audio_permission_dialog_title">Record Audio Permission Needed</string>
+    <string name="permission_needed">This app needs permission to record audio files. Do you want to allow it?</string>
+    <string name="dialog__cancel">Cancel</string>
+    <string name="dialog__allow">Allow</string>
+</resources>
