@@ -4,6 +4,7 @@ import android.media.MediaPlayer
 import br.android.cericatto.audio_waveform_ui.ui.main_screen.MainScreenAction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -26,7 +27,7 @@ data class AudioPlayerState(
  * AudioPlayerController manages MediaPlayer lifecycle and state updates.
   */
 class AudioPlayerController(
-	onAction: (MainScreenAction) -> Unit,
+	private val onAction: (MainScreenAction) -> Unit,
 	private val file: File,
 	private val coroutineScope: CoroutineScope
 ) {
@@ -101,7 +102,19 @@ class AudioPlayerController(
 		progressJob = coroutineScope.launch {
 			while (isActive) {
 				mediaPlayer?.let { player ->
-					val progress = player.currentPosition.toFloat() / player.duration
+					val duration = player.duration
+					val progress = player.currentPosition.toFloat() / duration
+					val formattedDuration = duration / 1000
+					val formattedProgress = (player.currentPosition / 1000)
+					onAction(
+						MainScreenAction.OnProgressChanged(
+							progress = formattedProgress,
+							duration = formattedDuration
+						)
+					)
+					if (formattedProgress >= formattedDuration) {
+						cancel()
+					}
 					_state.update { it.copy(progress = progress) }
 				}
 				delay(16) // Approximately 60 FPS.

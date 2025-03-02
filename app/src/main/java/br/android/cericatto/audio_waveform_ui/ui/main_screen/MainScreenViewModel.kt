@@ -27,6 +27,8 @@ class MainScreenViewModel @Inject constructor(
 	fun onAction(action: MainScreenAction) {
 		when (action) {
 			is MainScreenAction.OnAmplitudesLoaded -> updateLoading()
+			is MainScreenAction.OnProgressChanged -> updateProgress(action.progress, action.duration)
+
 		}
 	}
 
@@ -38,6 +40,15 @@ class MainScreenViewModel @Inject constructor(
 		_state.update { state ->
 			state.copy(
 				isLoading = false
+			)
+		}
+	}
+
+	private fun updateProgress(progress: Int, duration: Int) {
+		_state.update { state ->
+			state.copy(
+				progress = progress,
+				duration = duration
 			)
 		}
 	}

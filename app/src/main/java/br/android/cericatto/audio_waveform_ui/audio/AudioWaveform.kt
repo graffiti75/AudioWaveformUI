@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
@@ -28,8 +29,11 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import br.android.cericatto.audio_waveform_ui.ui.main_screen.MainScreenAction
 import br.android.cericatto.audio_waveform_ui.ui.main_screen.MainScreenState
 import br.android.cericatto.audio_waveform_ui.ui.theme.audioBarBackgroundColor
@@ -68,7 +72,6 @@ fun AudioPlayerWithControls(
 			controller.release()
 		}
 	}
-
 	Row(
 		modifier = Modifier
 			.padding(horizontal = 5.dp) // Outer padding to give room for the shadow
@@ -86,7 +89,7 @@ fun AudioPlayerWithControls(
 			.fillMaxWidth()
 			.padding(8.dp),
 		verticalAlignment = Alignment.CenterVertically,
-		horizontalArrangement = Arrangement.Start
+		horizontalArrangement = Arrangement.Center
 	) {
 		if (state.isLoading) {
 			Box(
@@ -119,24 +122,37 @@ fun AudioPlayerWithControls(
 				)
 			}
 		}
+
 		Box(
+			contentAlignment = Alignment.Center,
 			modifier = Modifier.weight(1f)
 		) {
 			playerState.waveformData?.let { data ->
 				AudioWaveform(
-					onAction = onAction,
 					waveformData = data,
-					currentProgress = playerState.progress,
-					modifier = Modifier.fillMaxWidth()
+					currentProgress = playerState.progress
 				)
 			}
+		}
+		Box(
+			contentAlignment = Alignment.Center,
+		) {
+			Text(
+				text = formatDuration(state.progress, state.duration),
+				style = TextStyle(
+					fontSize = 20.sp,
+					textAlign = TextAlign.Start,
+					color = Color(0xFF41434F)
+				),
+				modifier = Modifier.padding(start = 5.dp)
+			)
+
 		}
 	}
 }
 
 @Composable
 private fun AudioWaveform(
-	onAction: (MainScreenAction) -> Unit,
 	waveformData: WaveformData,
 	currentProgress: Float,
 	modifier: Modifier = Modifier,
@@ -221,7 +237,6 @@ private fun AudioPlayerWithControlsPreview() {
 @Composable
 private fun AudioWaveformPreview() {
 	AudioWaveform(
-		onAction = {},
 		waveformData = WaveformData(
 			amplitudes = listOf(
 				0.0f, 0.0026550293f, 0.0029296875f, 0.0035095215f, -0.0029296875f,

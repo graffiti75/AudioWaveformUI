@@ -16,7 +16,7 @@ import kotlin.math.roundToInt
  */
 suspend fun processWaveFile(
 	wavFile: File,
-	barsPerSecond: Int = 5
+	barsPerSecond: Int = 1
 ): WaveformData = withContext(Dispatchers.IO) {
 	println("---------------> processWaveFile() -> wavFile: $wavFile")
 	getWavFileSizeInKb(wavFile)
