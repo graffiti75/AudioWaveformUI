@@ -18,7 +18,7 @@ suspend fun processWaveFile(
 	wavFile: File,
 	barsPerSecond: Int = 1
 ): WaveformData = withContext(Dispatchers.IO) {
-	println("---------------> processWaveFile() -> wavFile: $wavFile")
+//	println("---------------> processWaveFile() -> wavFile: $wavFile")
 	getWavFileSizeInKb(wavFile)
 	val duration = getWavDurationInSeconds(wavFile)
 
@@ -48,12 +48,12 @@ suspend fun processWaveFile(
 	val compressedAmplitudes = samples.chunked(compressionFactor) { chunk ->
 		chunk.maxByOrNull { kotlin.math.abs(it) } ?: 0f
 	}
-	println("<-----")
+//	println("<-----")
 	WaveformData(compressedAmplitudes, duration)
 }
 
 suspend fun getWavFileSizeInKb(wavFile: File): Float = withContext(Dispatchers.IO) {
-	println("---------------> getWavFileSizeInKb() -> wavFile: $wavFile")
+//	println("---------------> getWavFileSizeInKb() -> wavFile: $wavFile")
 	val fis = FileInputStream(wavFile)
 	val header = ByteArray(44) // Read the standard 44-byte header.
 	fis.read(header)
@@ -76,23 +76,23 @@ suspend fun getWavFileSizeInKb(wavFile: File): Float = withContext(Dispatchers.I
 	// Convert to kilobytes (1 KB = 1024 bytes).
 	val totalSizeKb = totalSizeBytes.toFloat() / 1024f
 
-	println("ChunkSize (bytes 4-7): $chunkSize")
-	println("Total File Size (bytes): $totalSizeBytes")
-	println("Total File Size (KB): $totalSizeKb")
-	println("Total File Size (MB): ${totalSizeKb / 1024f}")
-	println("<-----")
+//	println("ChunkSize (bytes 4-7): $chunkSize")
+//	println("Total File Size (bytes): $totalSizeBytes")
+//	println("Total File Size (KB): $totalSizeKb")
+//	println("Total File Size (MB): ${totalSizeKb / 1024f}")
+//	println("<-----")
 
 	return@withContext totalSizeKb
 }
 
 suspend fun getWavDurationInSeconds(wavFile: File): Float = withContext(Dispatchers.IO) {
-	println("---------------> getWavDurationInSeconds() -> wavFile: $wavFile")
+//	println("---------------> getWavDurationInSeconds() -> wavFile: $wavFile")
 	val fis = FileInputStream(wavFile)
 	val headerBuffer = ByteArray(44)
 	fis.read(headerBuffer)
 
 	// Print the first 44 bytes for debugging
-	println("Header (first 44 bytes): ${headerBuffer.joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') }}")
+//	println("Header (first 44 bytes): ${headerBuffer.joinToString(" ") { it.toUByte().toString(16).padStart(2, '0') }}")
 
 	// Verify RIFF and WAVE identifiers
 	if (String(headerBuffer.slice(0..3).toByteArray()) != "RIFF") {
@@ -119,7 +119,7 @@ suspend fun getWavDurationInSeconds(wavFile: File): Float = withContext(Dispatch
 	if (dataChunkOffset == -1) {
 		throw IllegalArgumentException("No 'data' chunk found in WAV file")
 	}
-	println("Found 'data' chunk at offset: $dataChunkOffset")
+//	println("Found 'data' chunk at offset: $dataChunkOffset")
 
 	// Extract fields from standard positions.
 	val numChannels = ByteBuffer.wrap(headerBuffer.slice(22..23).toByteArray())
@@ -143,13 +143,13 @@ suspend fun getWavDurationInSeconds(wavFile: File): Float = withContext(Dispatch
 		0f
 	}
 
-	println("numChannels: $numChannels")
-	println("sampleRate: $sampleRate")
-	println("bitsPerSample: $bitsPerSample")
-	println("bytesPerSample: $bytesPerSample")
-	println("dataSize: $dataSize")
-	println("duration: $duration seconds")
+//	println("numChannels: $numChannels")
+//	println("sampleRate: $sampleRate")
+//	println("bitsPerSample: $bitsPerSample")
+//	println("bytesPerSample: $bytesPerSample")
+//	println("dataSize: $dataSize")
+//	println("duration: $duration seconds")
 
-	println("<-----")
+//	println("<-----")
 	return@withContext duration
 }
