@@ -1,5 +1,8 @@
 package br.android.cericatto.audio_waveform_ui.audio
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,6 +22,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -26,7 +30,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextStyle
@@ -158,9 +164,22 @@ private fun AudioWaveform(
 	modifier: Modifier = Modifier,
 	backgroundColor: Color = Color.Transparent,
 	barColor: Color = audioBarChartWave,
-	playedBarColor: Color = audioBarProgressColor.copy(alpha = 0.1f),
-	indicatorColor: Color = audioBarProgressColor.copy(alpha = 0.9f)
+	playedBarColor: Color = audioBarProgressColor,
+	indicatorColor: Color = audioBarProgressColor.copy(alpha = 0.5f)
 ) {
+	val animationProgress = remember { Animatable(0f) }
+	val totalBars = waveformData.amplitudes.size
+
+	LaunchedEffect(Unit) {
+		animationProgress.animateTo(
+			targetValue = 1f,
+			animationSpec = tween(
+				durationMillis = totalBars * 1000, // Total duration = limit seconds
+				easing = LinearEasing
+			)
+		)
+	}
+
 	Canvas(
 		modifier = modifier
 			.fillMaxWidth()
@@ -174,35 +193,58 @@ private fun AudioWaveform(
 		val canvasHeight = size.height
 
 		// Calculate bar width based on canvas width and duration
-		val totalBars = waveformData.amplitudes.size
 		val scaledBarWidth = (canvasWidth / totalBars) * 0.8f // 80% of available space for bars
 		val scaledSpacing = (canvasWidth / totalBars) * 0.2f  // 20% for spacing
+		val totalBarWidth = (size.width - (totalBars - 1) * scaledSpacing) / totalBars
+		val progressPerBar = 1f / totalBars
+		val cornerRadius = 15f
 
 		// Draw all bars
-		waveformData.amplitudes.forEachIndexed { index, amplitude ->
-			val x = index * (scaledBarWidth + scaledSpacing)
+		waveformData.amplitudes.forEachIndexed { i, amplitude ->
 			val barHeight = canvasHeight * kotlin.math.abs(amplitude)
-			val startY = (canvasHeight - barHeight) / 2
 
 			// Determine if this bar has been played
+			val x = i * (scaledBarWidth + scaledSpacing)
 			val progressPosition = (currentProgress * canvasWidth)
-			val isPlayed = x <= progressPosition
 
-			// Draw amplitude bar with appropriate color
-			drawLine(
-				color = if (isPlayed) playedBarColor else barColor,
-				start = Offset(x, startY),
-				end = Offset(x, startY + barHeight),
-				strokeWidth = scaledBarWidth
+			val barStartProgress = i * progressPerBar
+			val barEndProgress = (i + 1) * progressPerBar
+			val leftOffset = i * (scaledBarWidth + scaledSpacing)
+			val verticalOffset = (size.height - barHeight) / 2
+			val fillWidth = when {
+				currentProgress < barStartProgress -> 0f
+				currentProgress >= barEndProgress -> totalBarWidth
+				else -> {
+					val barProgress = (currentProgress - barStartProgress) / progressPerBar
+					totalBarWidth * barProgress
+				}
+			}
+
+			// Draw background for each amplitude.
+			drawRoundRect(
+				color = barColor,
+				topLeft = Offset(leftOffset, verticalOffset),
+				size = Size(totalBarWidth, barHeight),
+				cornerRadius = CornerRadius(cornerRadius, cornerRadius)
 			)
 
-			// Draw progress indicator (ball)
+			// Draw filled portion.
+			drawRoundRect(
+				color = playedBarColor,
+				topLeft = Offset(leftOffset, verticalOffset),
+				size = Size(fillWidth, barHeight),
+				cornerRadius = CornerRadius(cornerRadius, cornerRadius)
+			)
+
+			// Draw progress indicator (ball).
+			/*
 			drawProgressIndicator(
 				progress = currentProgress,
 				canvasWidth = canvasWidth,
 				canvasHeight = canvasHeight,
 				color = indicatorColor
 			)
+			 */
 		}
 	}
 }
