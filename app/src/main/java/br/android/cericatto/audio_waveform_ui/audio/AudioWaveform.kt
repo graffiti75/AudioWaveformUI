@@ -34,7 +34,6 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -204,9 +203,6 @@ private fun AudioWaveform(
 			val barHeight = canvasHeight * kotlin.math.abs(amplitude)
 
 			// Determine if this bar has been played
-			val x = i * (scaledBarWidth + scaledSpacing)
-			val progressPosition = (currentProgress * canvasWidth)
-
 			val barStartProgress = i * progressPerBar
 			val barEndProgress = (i + 1) * progressPerBar
 			val leftOffset = i * (scaledBarWidth + scaledSpacing)
@@ -235,34 +231,8 @@ private fun AudioWaveform(
 				size = Size(fillWidth, barHeight),
 				cornerRadius = CornerRadius(cornerRadius, cornerRadius)
 			)
-
-			// Draw progress indicator (ball).
-			/*
-			drawProgressIndicator(
-				progress = currentProgress,
-				canvasWidth = canvasWidth,
-				canvasHeight = canvasHeight,
-				color = indicatorColor
-			)
-			 */
 		}
 	}
-}
-
-private fun DrawScope.drawProgressIndicator(
-	progress: Float,
-	canvasWidth: Float,
-	canvasHeight: Float,
-	color: Color
-) {
-	val x = progress * canvasWidth
-	val radius = 8.dp.toPx()
-
-	drawCircle(
-		color = color,
-		radius = radius,
-		center = Offset(x, canvasHeight / 2)
-	)
 }
 
 @Preview
